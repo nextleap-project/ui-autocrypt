@@ -1,5 +1,6 @@
 // javascript implementation of essential Autocrypt preferences UI
 
+transfer = localStorageTransfer;
 
 ui = {};
 
@@ -7,7 +8,16 @@ panes = {};
 
 user = 'User';
 
-msgstore = {};
+// client state for all clients is stored here:
+storage = {};
+
+// messages for the current user
+messages = [];
+
+// autocrypt state for the current user
+autocrypt = {};
+
+
 
 replying_to = undefined;
 
@@ -49,7 +59,7 @@ setup_page = function() {
     adduser('Bob', 'darkorange');
     ui['encrypted'].parentNode.insertBefore(img('lock'), ui['encrypted']);
 
-    switchuser(Object.keys(msgstore)[0]);
+    switchuser(Object.keys(storage)[0]);
     pane('list');
     update_description();
 };
@@ -64,13 +74,13 @@ autocrypt_preference = function(p) {
 
     ui[other].checked = false;
     if (ui['yes'].checked) {
-        msgstore[user]['autocrypt']['prefer-encrypted'] = true;
+        autocrypt['prefer-encrypted'] = true;
     } else if (ui['no'].checked) {
-        msgstore[user]['autocrypt']['prefer-encrypted'] = false;
+        autocrypt['prefer-encrypted'] = false;
     } else {
-        delete msgstore[user]['autocrypt']['prefer-encrypted'];
+        delete autocrypt['prefer-encrypted'];
     }
-    self_sync_autocrypt_state(user);
+    self_sync_autocrypt_state();
     update_description();
 };
 
@@ -93,44 +103,43 @@ more = function() {
     return false;
 };
 
-setupprefs = function(username) {
-    ac = msgstore[username.toLowerCase()]['autocrypt'];
-    ui['enable'].checked = ac['enabled'];
-    if (ac['prefer-encrypted'] == undefined) {
+setupprefs = function() {
+    ui['enable'].checked = autocrypt['enabled'];
+    if (autocrypt['prefer-encrypted'] == undefined) {
         ui['yes'].checked = false;
         ui['no'].checked = false;
-    } else if (ac['prefer-encrypted'] == true) {
+    } else if (autocrypt['prefer-encrypted'] == true) {
         ui['yes'].checked = true;
         ui['no'].checked = false;
-    } else if (ac['prefer-encrypted'] == false) {
+    } else if (autocrypt['prefer-encrypted'] == false) {
         ui['yes'].checked = false;
         ui['no'].checked = true;
     }
 };
 
 autocrypt_enable = function() {
-    autocrypt_switch(user, ui['enable'].checked);
+    autocrypt_switch(ui['enable'].checked);
     update_description();
 };
 
-autocrypt_switch = function(username, enabled) {
-    msgstore[username]['autocrypt']['enabled'] = enabled;
+autocrypt_switch = function(enabled) {
+    autocrypt['enabled'] = enabled;
     if (enabled) {
-        if (msgstore[username]['autocrypt']['key'] === undefined)
-            msgstore[username]['autocrypt']['key'] = String(Math.random());
+        if (autocrypt['key'] === undefined)
+            autocrypt['key'] = String(Math.random());
     }
-    self_sync_autocrypt_state(username);
+    self_sync_autocrypt_state();
 };
 
-self_sync_autocrypt_state = function(username) {
-    if (msgstore[username]['autocrypt']['enabled']) {
-        msgstore[username]['autocrypt']['state'][username] = {
+self_sync_autocrypt_state = function() {
+    if (autocrypt['enabled']) {
+        autocrypt['state'][user] = {
             'date': new Date(),
-            'key': msgstore[username]['autocrypt']['key'],
-            'prefer-encrypted': msgstore[username]['autocrypt']['prefer-encrypted']
+            'key': autocrypt['key'],
+            'prefer-encrypted': autocrypt['prefer-encrypted']
         };
     } else {
-        msgstore[username]['autocrypt']['state'][username] = {
+        autocrypt['state'][user] = {
             'date': new Date()
         };
     }
@@ -168,7 +177,7 @@ update_description = function() {
 };
 
 changeuser = function() {
-    names = Object.keys(msgstore);
+    names = Object.keys(storage);
     index = -1;
     for (var x in names) {
         if (names[x] == user) {
@@ -182,10 +191,13 @@ changeuser = function() {
 
 switchuser = function(name) {
     user = name;
-    ui['username'].innerText = msgstore[name]['name'];
-    ui['username'].style.color = msgstore[name]['color'];
-    ui['from'].innerText = msgstore[name]['name'];
-    setupprefs(name);
+    autocrypt = storage[name]['autocrypt']
+    messages = [];
+    transfer.reload(name)
+    ui['username'].innerText = storage[name]['name'];
+    ui['username'].style.color = storage[name]['color'];
+    ui['from'].innerText = storage[name]['name'];
+    setupprefs();
     ui['showmore'].checked = false;
     pane('list');
     update_description();
@@ -227,28 +239,23 @@ pane = function(choice) {
 
 adduser = function(username, color) {
     lc = username.toLowerCase();
-    if (msgstore[lc] == undefined) {
-        msgstore[lc] = {
+    if (storage[lc] == undefined) {
+        storage[lc] = {
             'name': username,
             'color': color,
             'autocrypt': {
                 'enabled': false,
                 'state': {}
-            },
-            'msgs': []
+            }
         };
     }
 };
 
-autocryptheader = function(username) {
-    var lc = username.toLowerCase();
-    if (msgstore[lc] == undefined)
+autocryptheader = function() {
+    if (autocrypt['enabled'] == false)
         return undefined;
-    ac = msgstore[lc]['autocrypt'];
-    if (ac['enabled'] == false)
-        return undefined;
-    return { 'key': ac['key'],
-             'prefer-encrypted': ac['prefer-encrypted']
+    return { 'key': autocrypt['key'],
+             'prefer-encrypted': autocrypt['prefer-encrypted']
            };
 };
 
@@ -338,14 +345,13 @@ generate_list_entry_from_msg = function(msg) {
 };
 
 populate_list = function() {
-    var msgs = msgstore[user]['msgs'];
 
     while (ui['msglist'].hasChildNodes())
         ui['msglist'].removeChild(ui['msglist'].lastChild);
 
-    if (msgs.length) {
-        for (var x in msgs) {
-            ui['msglist'].appendChild(generate_list_entry_from_msg(msgs[x]));
+    if (messages.length) {
+        for (var x in messages) {
+            ui['msglist'].appendChild(generate_list_entry_from_msg(messages[x]));
         }
         ui['list-replacement'].style.display = 'none';
         ui['msgtable'].style.display = 'table';
@@ -356,7 +362,7 @@ populate_list = function() {
 };
 
 sendmail = function() {
-    if (addmail(msgstore[user]['name'], ui['to'].value, ui['subject'].value, ui['body'].value, ui['encrypted'].checked)) {
+    if (addmail(ui['to'].value, ui['subject'].value, ui['body'].value, ui['encrypted'].checked)) {
         clearcompose();
         pane('list');
         return false;
@@ -365,39 +371,35 @@ sendmail = function() {
     }
 };
 
-addmail = function(from, to, subj, body, encrypted) {
-    if (msgstore[from.toLowerCase()] == undefined) {
-        alert("Not a valid sender: " + to);
-        return false;
-    }
-    if (msgstore[to.toLowerCase()] == undefined) {
-        alert("No recipient " + to);
-        return false;
-    }
-    var msg = { 'from': from,
+addmail = function(to, subj, body, encrypted) {
+    var msg = { 'from': storage[user]['name'],
             'to': to,
             'subject': subj,
             'body': body,
             'encrypted': encrypted,
-            'autocrypt': autocryptheader(from),
+            'autocrypt': autocryptheader(),
             'date': new Date()
               };
-    storemail(to, msg);
-    if (to.toLowerCase() != from.toLowerCase())
-        storemail(from, msg);
+    transfer.send(msg);
     return true;
 };
 
-getacforpeer = function(username, peer) {
-    var ac = msgstore[username.toLowerCase()]['autocrypt']['state'][peer.toLowerCase()];
+transfer.receive = function(msg) {
+    acupdate(msg)
+    messages.push(msg);
+};
+
+getacforpeer = function(peer) {
+    var ac = autocrypt['state'][peer.toLowerCase()];
 
     if (ac === undefined)
         ac = { 'date': new Date("1970") };
     return ac;
 };
 
-acupdate = function(username, msg) {
-    var ac = getacforpeer(username, msg['from']);
+acupdate = function(msg) {
+    var peer = msg['from'];
+    var ac = getacforpeer(peer);
     var newac = {
         'date': msg['date']
     };
@@ -407,21 +409,15 @@ acupdate = function(username, msg) {
         newac['key'] =  msg['autocrypt']['key'];
     };
     if (ac['date'].getTime() < newac['date'].getTime()) {
-        msgstore[username]['autocrypt']['state'][msg['from'].toLowerCase()] = newac;
+        autocrypt['state'][peer.toLowerCase()] = newac;
     }
-};
-
-storemail = function(username, msg) {
-    var lc = username.toLowerCase();
-    acupdate(lc, msg);
-    msgstore[lc]['msgs'].push(msg);
 };
 
 updatecompose = function() {
     var to = ui['to'].value;
-    var ac = getacforpeer(user,to);
+    var ac = getacforpeer(to);
 
-    if (!msgstore[user]['autocrypt']['enabled']) {
+    if (!autocrypt['enabled']) {
         if (ac['prefer-encrypted']) {
             ui['encrypted-row'].style.display = 'table-row';
             ui['encrypted'].checked = false;
@@ -449,22 +445,22 @@ updatecompose = function() {
 
 clickencrypted = function() {
     var to = ui['to'].value;
-    var ac = getacforpeer(user, to);
+    var ac = getacforpeer(to);
     var encrypted = ui['encrypted'].checked;
 
     // FIXME: if autocrypt is disabled and we've set encrypt, prompt the user about it.
-    if (encrypted && msgstore[user]['autocrypt']['enabled'] === false) {
+    if (encrypted && autocrypt['enabled'] === false) {
         if (confirm("Please only enable Autocrypt on one device.\n\n" +
                     "Are you sure you want to enable Autocrypt on this device?")) {
             autocrypt_switch(user, true);
-            setupprefs(user);
+            setupprefs();
             update_description();
         } else {
             ui['encrypted'].checked = false;
             encrypted = false;
         }
     }
-    if (!msgstore[user]['autocrypt']['enabled'] && !ui['encrypted'].disabled) {
+    if (!autocrypt['enabled'] && !ui['encrypted'].disabled) {
         ui['explanation'].innerText = 'enable Autocrypt to encrypt';
     } else if (encrypted && ac['prefer-encrypted'] === false) {
         ui['explanation'].innerText = to + ' prefers to receive unencrypted mail.  It might be hard for them to read.';
