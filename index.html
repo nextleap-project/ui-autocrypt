@@ -4,15 +4,16 @@
         <script type="text/javascript" src="providers/localStorageProvider.js"></script>
         <script type="text/javascript" src="autocrypt.js"></script>
         <script type="text/javascript" src="tests.js"></script>
+        <script type="text/javascript" src="ui.js"></script>
         <script type="text/javascript" src="tests/user-switch-test.js"></script>
         <link rel="stylesheet" type="text/css" href="ui.css" />
     </head>
     <body onload="setup_page();">
         <div id="menu">
             <ul>
-                <li id="tab-compose" onclick="return pane('compose');">Write mail</li>
-                <li id="tab-list" onclick="return pane('list');">Mailbox</li>
-                <li id="tab-preferences" onclick="return pane('preferences');">Preferences</li>
+                <li id="tab-compose" onclick="return ui.pane('compose');">Write mail</li>
+                <li id="tab-list" onclick="return ui.pane('list');">Mailbox</li>
+                <li id="tab-preferences" onclick="return ui.pane('preferences');">Preferences</li>
             </ul>
             <div id="login-info">
               <div id="menu-username">
@@ -27,11 +28,11 @@
             <div>
                 <table><tbody>
                         <tr><th>From:</th><td id="from"></td></tr>
-                        <tr><th>To:</th><td><input onchange="return updatecompose();" id="to" /></td></tr>
+                        <tr><th>To:</th><td><input onchange="return ui.updatecompose();" id="to" /></td></tr>
                         <tr><th>Subject:</th><td><input id="subject" /></td></tr>
-                        <tr id="encrypted-row"><td colspan="2"><label><input type="checkbox" onclick="return clickencrypted();" id="encrypted">Encrypt</label><span id="explanation"></span></td></tr>
+                        <tr id="encrypted-row"><td colspan="2"><label><input type="checkbox" onclick="return ui.clickencrypted();" id="encrypted">Encrypt</label><span id="explanation"></span></td></tr>
                         <tr><td id="compose-actions" colspan="2">
-                                <input type="button" id="send" onclick="return sendmail();" value="Send"/>
+                                <input type="button" id="send" onclick="return ui.sendmail();" value="Send"/>
                         </td></tr>
                         <tr><td colspan="2">
                                 <textarea id="body"></textarea>
@@ -72,13 +73,13 @@
                         <label>[<input type="checkbox"
                                        value="enable"
                                        id="enable"
-                                       onclick="autocrypt_enable();"/>enable]</label>
+                                       onclick="ui.autocrypt_enable();"/>enable]</label>
                     </legend>
                     <div>Please enable Autocrypt on <em>only one</em> device. (<a href="#" onclick="return why();">why?</a>)
                     </div>
                     <hr />
                     <div id="more">
-                        <a id="showmore" href="#" onclick="return more();">more...</a>
+                        <a id="showmore" href="#" onclick="return ui.more();">more...</a>
                     </div>
                     <div id="autocrypt-settings">
                         <label>
@@ -86,7 +87,7 @@
                                    value="yes"
                                    name="prefer"
                                    id="preferyes"
-                                   onclick="autocrypt_preference('yes');"/>
+                                   onclick="ui.autocrypt_preference('yes');"/>
                             I prefer to receive encrypted mail.
                         </label>
                         <br/>
@@ -95,7 +96,7 @@
                                    value="yes"
                                    name="prefer"
                                    id="preferno"
-                                   onclick="autocrypt_preference('no');"/>
+                                   onclick="ui.autocrypt_preference('no');"/>
                             I prefer not to receive encrypted mail.
                         </label>
                     </div>

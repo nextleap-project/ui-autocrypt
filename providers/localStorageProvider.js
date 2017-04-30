@@ -1,4 +1,4 @@
-localStorageTransfer = function(){
+localStorageProvider = function(){
     var boxes = {};
 
     function send(msg) {
