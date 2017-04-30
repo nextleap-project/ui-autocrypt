@@ -1,9 +1,11 @@
 <html>
     <head>
         <title>Autocrypt Essential UI Demo</title>
-        <script type="text/javascript" src="localStorageTransfer.js"></script>
-        <script type="text/javascript" src="autocrypt-ui.js"></script>
-        <link rel="stylesheet" type="text/css" href="autocrypt-ui.css" />
+        <script type="text/javascript" src="providers/localStorageProvider.js"></script>
+        <script type="text/javascript" src="autocrypt.js"></script>
+        <script type="text/javascript" src="tests.js"></script>
+        <script type="text/javascript" src="tests/user-switch-test.js"></script>
+        <link rel="stylesheet" type="text/css" href="ui.css" />
     </head>
     <body onload="setup_page();">
         <div id="menu">
@@ -17,7 +19,7 @@
                 Logged in as
                 <div id="username">user</div>
               </div>
-              (<a href="#" onclick="return changeuser();">change</a>)
+              (<a id="usertoggle" href="#" onclick="return changeuser();">change</a>)
             </div>
         </div>
 
