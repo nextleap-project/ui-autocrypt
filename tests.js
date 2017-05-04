@@ -25,6 +25,12 @@ Tests = function() {
                 id + ' should contain "' + text + '".' );
     };
 
+    assert.selector = function(selector) {
+        elem = document.querySelector(selector);
+        assert( elem,
+                'Expected to find element matching "' + selector + '".' );
+    };
+
     function run() {
         var arr = Object.entries(this.specs)
         var setup = this.setup;

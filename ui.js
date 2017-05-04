@@ -1,42 +1,39 @@
 function userInterface(){
-    var dom = {};
-
-    var panes = {};
+    var panes = {
+        'compose': document.getElementById("compose"),
+        'list': document.getElementById("list"),
+        'msg-view': document.getElementById("msg-view"),
+        'preferences': document.getElementById("preferences")
+    };
+    var dom = {
+        'more': document.getElementById("more"),
+        'list-replacement': document.getElementById("list-replacement"),
+        'msgtable': document.getElementById("msgtable"),
+        'username': document.getElementById("username"),
+        'from': document.getElementById("from"),
+        'to': document.getElementById("to"),
+        'subject': document.getElementById("subject"),
+        'body': document.getElementById("body"),
+        'msglist': document.getElementById("msglist"),
+        'view-from': document.getElementById("view-from"),
+        'view-to': document.getElementById("view-to"),
+        'view-subject': document.getElementById("view-subject"),
+        'view-date': document.getElementById("view-date"),
+        'view-body': document.getElementById("view-body"),
+        'view-encrypted': document.getElementById("view-encrypted"),
+        'encrypted': document.getElementById("encrypted"),
+        'encrypted-row': document.getElementById("encrypted-row"),
+        'showmore': document.getElementById("showmore"),
+        'reply': document.getElementById("reply"),
+        'yes': document.getElementById("preferyes"),
+        'no': document.getElementById("preferno"),
+        'enable': document.getElementById("enable"),
+        'description': document.getElementById("description"),
+        'explanation': document.getElementById("explanation"),
+        'settings': document.getElementById("autocrypt-settings")
+    };
 
     function setup() {
-        panes = {
-            'compose': document.getElementById("compose"),
-            'list': document.getElementById("list"),
-            'msg-view': document.getElementById("msg-view"),
-            'preferences': document.getElementById("preferences")
-        };
-        dom = {
-            'more': document.getElementById("more"),
-            'list-replacement': document.getElementById("list-replacement"),
-            'msgtable': document.getElementById("msgtable"),
-            'username': document.getElementById("username"),
-            'from': document.getElementById("from"),
-            'to': document.getElementById("to"),
-            'subject': document.getElementById("subject"),
-            'body': document.getElementById("body"),
-            'msglist': document.getElementById("msglist"),
-            'view-from': document.getElementById("view-from"),
-            'view-to': document.getElementById("view-to"),
-            'view-subject': document.getElementById("view-subject"),
-            'view-date': document.getElementById("view-date"),
-            'view-body': document.getElementById("view-body"),
-            'view-encrypted': document.getElementById("view-encrypted"),
-            'encrypted': document.getElementById("encrypted"),
-            'encrypted-row': document.getElementById("encrypted-row"),
-            'showmore': document.getElementById("showmore"),
-            'reply': document.getElementById("reply"),
-            'yes': document.getElementById("preferyes"),
-            'no': document.getElementById("preferno"),
-            'enable': document.getElementById("enable"),
-            'description': document.getElementById("description"),
-            'explanation': document.getElementById("explanation"),
-            'settings': document.getElementById("autocrypt-settings")
-        };
         dom['encrypted'].parentNode.insertBefore(img('lock'), dom['encrypted']);
     };
 

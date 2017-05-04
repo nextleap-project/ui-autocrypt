@@ -7,15 +7,6 @@ user = 'User';
 // setup during initialization
 ui = {};
 
-// client state for all clients is stored here:
-storage = {};
-
-// messages for the current user
-messages = [];
-
-// autocrypt state for the current user
-autocrypt = {};
-
 
 
 replying_to = undefined;
@@ -23,8 +14,6 @@ replying_to = undefined;
 setup_page = function() {
     ui = userInterface();
     ui.setup();
-    adduser('Alice', 'green');
-    adduser('Bob', 'darkorange');
 
     switchuser(Object.keys(storage)[0]);
     ui.pane('list');
@@ -143,4 +132,19 @@ acupdate = function(msg) {
         autocrypt['state'][peer.toLowerCase()] = newac;
     }
 };
+
+function resetClient() {
+    // client state for all clients is stored here:
+    storage = {};
+
+    // messages for the current user
+    messages = [];
+
+    // autocrypt state for the current user
+    autocrypt = {};
+    adduser('Alice', 'green');
+    adduser('Bob', 'darkorange');
+};
+
+resetClient();
 

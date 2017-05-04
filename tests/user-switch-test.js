@@ -1,8 +1,9 @@
 (function(){
     var describe = Tests.describe;
+
     describe('User switch', function(it, assert) {
         var usertoggle = document.getElementById("usertoggle");
-        this.teardown = function() {
+        this.setup = function() {
             switchuser('alice');
         };
         it('starts with Alice', function() {
